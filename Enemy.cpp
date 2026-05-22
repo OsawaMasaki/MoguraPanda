@@ -40,6 +40,7 @@ void Enemy::Update()
 		dir_timer = 3.0f + dir_timer;
 	}
 
+
 	Point newPos = pos_;
 	if (prog_timer < 0.0f)
 	{
