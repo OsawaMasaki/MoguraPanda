@@ -6,7 +6,7 @@ namespace
 {
 	const int ENEMY_SIZE = 48; //敵のサイズ 32*32
 	const Point ENEMY_START_POS = { 20 * ENEMY_SIZE, 10 * ENEMY_SIZE }; //敵の初期位置
-	const DIR INIT_ENEMY_DIR = { LEFT };
+	const DIR INIT_ENEMY_DIR = { RIGHT };
 	const int ENEMY_DRAW_SIZE = 32; //敵の描画サイズ
 	const int animFrame[4]{ 0, 1, 2, 1 };
 	const float ANIM_INTERVAL = 0.2f;
@@ -36,7 +36,7 @@ void Enemy::Update()
 	prog_timer = prog_timer - dt;
 	if (dir_timer < 0.0f)
 	{
-		dir_ = (DIR)(GetRand(3));
+		//dir_ = (DIR)(GetRand(3));
 		dir_timer = 3.0f + dir_timer;
 	}
 
@@ -44,6 +44,10 @@ void Enemy::Update()
 	Point newPos = pos_;
 	if (prog_timer < 0.0f)
 	{
+		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
+		
+		//移動先を計算
+		//マップの外側をEnemyが時計回りに周回するようにする
 		switch (dir_)
 		{
 		case UP:
@@ -62,18 +66,37 @@ void Enemy::Update()
 			break;
 		}
 
-		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
-
-
 		//移動先がステージの外に出ないようにする
 		if(mapValue != 1)
 		{
 			pos_ = newPos;
 		}
+
+		if (mapValue == 1)
+		{
+			//壁に当たったら次の方向に向きを変える
+			switch (dir_)
+			{
+			case UP:
+				dir_ = RIGHT;
+				break;
+			case DOWN:
+				dir_ = LEFT;
+				break;
+			case LEFT:
+				dir_ = UP;
+				break;
+			case RIGHT:
+				dir_ = DOWN;
+				break;
+			default:
+				break;
+			}
+		}
+
+
 		prog_timer = 0.5f + prog_timer;
 	}
-
-
 }
 
 void Enemy::Draw()
