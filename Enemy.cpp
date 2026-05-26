@@ -34,20 +34,16 @@ void Enemy::Update()
 	float dt = Time::DeltaTime();
 	dir_timer = dir_timer - dt;
 	prog_timer = prog_timer - dt;
-	if (dir_timer < 0.0f)
-	{
-		//dir_ = (DIR)(GetRand(3));
-		dir_timer = 3.0f + dir_timer;
-	}
+	//if (dir_timer < 0.0f)
+	//{
+	//	//dir_ = (DIR)(GetRand(3));
+	//	dir_timer = 3.0f + dir_timer;
+	//}
 
-
-	Point newPos = pos_;
 	if (prog_timer < 0.0f)
 	{
-		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
-		
-		//移動先を計算
-		//マップの外側をEnemyが時計回りに周回するようにする
+		// 1. まず、現在の位置から「一歩進んだ仮の座標」を計算する
+		Point newPos = pos_;
 		switch (dir_)
 		{
 		case UP:
@@ -66,34 +62,26 @@ void Enemy::Update()
 			break;
 		}
 
-		//移動先がステージの外に出ないようにする
-		if(mapValue != 1)
+		// 2. 【重要】一歩進めた「newPos」の場所が壁かどうかをここで調べる！
+		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
+
+		// 3. もし移動先が「壁（1）」だったら、移動せずにその場で向きだけ変える
+		if (mapValue == 1)
+		{
+			switch (dir_)
+			{
+			case UP:    dir_ = RIGHT; break;
+			case RIGHT: dir_ = DOWN;  break;
+			case DOWN:  dir_ = LEFT;  break;
+			case LEFT:  dir_ = UP;    break;
+			default: break;
+			}
+		}
+		// 4. 壁じゃない（床）なら、安全に移動する
+		else
 		{
 			pos_ = newPos;
 		}
-
-		if (mapValue == 1)
-		{
-			//壁に当たったら次の方向に向きを変える
-			switch (dir_)
-			{
-			case UP:
-				dir_ = RIGHT;
-				break;
-			case DOWN:
-				dir_ = LEFT;
-				break;
-			case LEFT:
-				dir_ = UP;
-				break;
-			case RIGHT:
-				dir_ = DOWN;
-				break;
-			default:
-				break;
-			}
-		}
-
 
 		prog_timer = 0.5f + prog_timer;
 	}
