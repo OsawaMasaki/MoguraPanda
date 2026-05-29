@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "time.h"
 #include "Stage.h"
+#include "Player.h"
 
 namespace
 {
@@ -28,8 +29,8 @@ Enemy::~Enemy()
 void Enemy::Update()
 {
 	//GetRand(数値)
-	//3秒に1回向きをランダムに変える
-	static float dir_timer = 3.0f;
+	//数秒に1回向きをランダムに変える
+	static float dir_timer = 2.0f;
 	static float prog_timer = 0.5f;
 	float dt = Time::DeltaTime();
 	dir_timer = dir_timer - dt;
@@ -62,25 +63,51 @@ void Enemy::Update()
 			break;
 		}
 
-		// 2. 【重要】一歩進めた「newPos」の場所が壁かどうかをここで調べる！
+		// 2.　一歩進めた「newPos」の場所が壁かどうかをここで調べる
 		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
 
-		// 3. もし移動先が「壁（1）」だったら、移動せずにその場で向きだけ変える
-		if (mapValue == 1)
-		{
-			switch (dir_)
-			{
-			case UP:    dir_ = RIGHT; break;
-			case RIGHT: dir_ = DOWN;  break;
-			case DOWN:  dir_ = LEFT;  break;
-			case LEFT:  dir_ = UP;    break;
-			default: break;
-			}
-		}
-		// 4. 壁じゃない（床）なら、安全に移動する
-		else
+		//ここからプレイヤーが近くにいるかの処理
+		//Playerを探す
+		auto player = FindGameObject<Player>();
+		Point playerPos = player->GetPlayerPos();
+
+		int distX = abs(playerPos.x - pos_.x);
+		int distY = abs(playerPos.y - pos_.y);
+		//範囲内に入ったら追いかけるように
+		if (distX + distY < 4 * ENEMY_DRAW_SIZE)
 		{
 			pos_ = newPos;
+			if (distX > distY)
+			{
+				// X方向の差の方が大きいから、左右のどちらかに向きを変える
+				dir_ = (playerPos.x > pos_.x) ? RIGHT : LEFT;
+			}
+			else
+			{
+				// Y方向の差の方が大きいから、上下のどちらかに向きを変える
+				dir_ = (playerPos.y > pos_.y) ? DOWN : UP;
+			}
+		}
+
+		else
+		{
+			// 3. もし移動先が「壁（1）」だったら、移動せずにその場で向きだけ変える
+			if (mapValue == 1)
+			{
+				switch (dir_)
+				{
+				case UP:    dir_ = RIGHT; break;
+				case RIGHT: dir_ = DOWN;  break;
+				case DOWN:  dir_ = LEFT;  break;
+				case LEFT:  dir_ = UP;    break;
+				default: break;
+				}
+			}
+			// 4. 壁じゃない（床）なら移動する
+			else
+			{
+				pos_ = newPos;
+			}
 		}
 
 		prog_timer = 0.5f + prog_timer;
