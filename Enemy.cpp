@@ -35,6 +35,11 @@ void Enemy::Update()
 	float dt = Time::DeltaTime();
 	dir_timer = dir_timer - dt;
 	prog_timer = prog_timer - dt;
+
+	//Playerを探す
+	auto player = FindGameObject<Player>();
+	Point playerPos = player->GetPlayerPos();
+
 	//if (dir_timer < 0.0f)
 	//{
 	//	//dir_ = (DIR)(GetRand(3));
@@ -66,15 +71,12 @@ void Enemy::Update()
 		// 2.　一歩進めた「newPos」の場所が壁かどうかをここで調べる
 		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
 
+		float distX = abs(playerPos.x - pos_.x);
+		float distY = abs(playerPos.y - pos_.y);
+	 
 		//ここからプレイヤーが近くにいるかの処理
-		//Playerを探す
-		auto player = FindGameObject<Player>();
-		Point playerPos = player->GetPlayerPos();
-
-		int distX = abs(playerPos.x - pos_.x);
-		int distY = abs(playerPos.y - pos_.y);
 		//範囲内に入ったら追いかけるように
-		if (distX + distY < 4 * ENEMY_DRAW_SIZE)
+		if (distX + distY < 5 * ENEMY_DRAW_SIZE)
 		{
 			pos_ = newPos;
 			if (distX > distY)
@@ -88,7 +90,6 @@ void Enemy::Update()
 				dir_ = (playerPos.y > pos_.y) ? DOWN : UP;
 			}
 		}
-
 		else
 		{
 			// 3. もし移動先が「壁（1）」だったら、移動せずにその場で向きだけ変える
@@ -126,6 +127,37 @@ void Enemy::Draw()
 		{  nowFrame * ENEMY_SIZE, 1 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE},
 		{  nowFrame * ENEMY_SIZE, 2 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE}
 	};
+
+	// ==========================================================
+	// 【追加】敵の正面1マスにデバッグ用の箱を描画する
+	// ==========================================================
+	// 1. まず、今の位置から「正面一歩先」の座標を計算する
+	Point frontBoxPos = pos_; // 敵の今の位置をベースにする
+	switch (dir_)
+	{
+	case UP:
+		frontBoxPos.y -= ENEMY_DRAW_SIZE; // 上にずらす
+		break;
+	case DOWN:
+		frontBoxPos.y += ENEMY_DRAW_SIZE; // 下にずらす
+		break;
+	case LEFT:
+		frontBoxPos.x -= ENEMY_DRAW_SIZE; // 左にずらす
+		break;
+	case RIGHT:
+		frontBoxPos.x += ENEMY_DRAW_SIZE; // 右にずらす
+		break;
+	}
+
+	// 2. 計算した座標（frontBoxPos）に、デバッグ用の箱を描画する
+	//    敵本体の黄色（255, 255, 0）と違う色にすると分かりやすいよ（例：水色）
+	DrawBox(frontBoxPos.x, frontBoxPos.y,
+		frontBoxPos.x + ENEMY_DRAW_SIZE, frontBoxPos.y + ENEMY_DRAW_SIZE,
+		GetColor(0, 200, 200), TRUE); // 水色で枠線を描画
+
+	// ==========================================================
+
+
 	DrawBox(pos_.x, pos_.y, pos_.x + ENEMY_DRAW_SIZE, pos_.y + ENEMY_DRAW_SIZE,
 		GetColor(255, 255, 0), FALSE,2);
 	DrawRectExtendGraph(pos_.x, pos_.y,pos_.x + ENEMY_DRAW_SIZE, pos_.y + ENEMY_DRAW_SIZE,
@@ -135,4 +167,7 @@ void Enemy::Draw()
 		animTimer = ANIM_INTERVAL + animTimer;
 	}
 	animTimer = animTimer - Time::DeltaTime();
+
+
+
 }
