@@ -151,10 +151,16 @@ void Enemy::Draw()
 
 	// 2. 計算した座標（frontBoxPos）に、デバッグ用の箱を描画する
 	//    敵本体の黄色（255, 255, 0）と違う色にすると分かりやすいよ（例：水色）
-	DrawBox(frontBoxPos.x, frontBoxPos.y,
-		frontBoxPos.x + ENEMY_DRAW_SIZE, frontBoxPos.y + ENEMY_DRAW_SIZE,
-		GetColor(0, 200, 200), TRUE); // 水色で枠線を描画
-
+	for (int y = 0; y < 3;y++)
+	{
+		for (int x = 0; x < 3;x++)
+		{
+			DrawBox(frontBoxPos.x - x * ENEMY_DRAW_SIZE, frontBoxPos.y - y * ENEMY_DRAW_SIZE,
+				frontBoxPos.x + x * ENEMY_DRAW_SIZE + ENEMY_DRAW_SIZE,
+				frontBoxPos.y + y * ENEMY_DRAW_SIZE + ENEMY_DRAW_SIZE,
+				GetColor(0, 200, 200), FALSE); // 水色の箱を5*5で描画
+		}
+	}
 	// ==========================================================
 
 
