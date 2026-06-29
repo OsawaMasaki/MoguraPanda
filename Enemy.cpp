@@ -13,9 +13,16 @@ namespace
 	const float ANIM_INTERVAL = 0.2f;
 }
 
+enum State {
+	Patrol = 0,
+	Chase,
+	Attack,
+	Search
+};
 
 Enemy::Enemy()
-	: GameObject() 
+	: GameObject()
+	, state_(Patrol)
 {
 	hImage_ = LoadGraph("Assets/panda_R.png");
 	pos_ = ENEMY_START_POS; //32はブロックの位置pos_
@@ -52,20 +59,11 @@ void Enemy::Update()
 		Point newPos = pos_;
 		switch (dir_)
 		{
-		case UP:
-			newPos.y -= ENEMY_DRAW_SIZE;
-			break;
-		case DOWN:
-			newPos.y += ENEMY_DRAW_SIZE;
-			break;
-		case LEFT:
-			newPos.x -= ENEMY_DRAW_SIZE;
-			break;
-		case RIGHT:
-			newPos.x += ENEMY_DRAW_SIZE;
-			break;
-		default:
-			break;
+		case UP:    newPos.y -= ENEMY_DRAW_SIZE; break;
+		case DOWN:  newPos.y += ENEMY_DRAW_SIZE; break;
+		case LEFT:  newPos.x -= ENEMY_DRAW_SIZE; break;
+		case RIGHT: newPos.x += ENEMY_DRAW_SIZE; break;
+		default: break;
 		}
 
 		// 2.　一歩進めた「newPos」の場所が壁かどうかをここで調べる
@@ -73,26 +71,21 @@ void Enemy::Update()
 
 		float distX = abs(playerPos.x - pos_.x);
 		float distY = abs(playerPos.y - pos_.y);
+		float totalDist = distX + distY;
 	 
 		//ここからプレイヤーが近くにいるかの処理
 		//範囲内に入ったら追いかけるように
-		if (distX + distY < 5 * ENEMY_DRAW_SIZE)
+		switch (state_)
 		{
-			pos_ = newPos;
-			if (distX > distY)
+		case Patrol:
+			// プレイヤーが近く（5マス未満）にいたら追跡（Chase）に切り替え
+			if (totalDist < 5 * ENEMY_DRAW_SIZE)
 			{
-				// X方向の差の方が大きいから、左右のどちらかに向きを変える
-				dir_ = (playerPos.x > pos_.x) ? RIGHT : LEFT;
+				state_ = Chase;
+				break;
 			}
-			else
-			{
-				// Y方向の差の方が大きいから、上下のどちらかに向きを変える
-				dir_ = (playerPos.y > pos_.y) ? DOWN : UP;
-			}
-		}
-		else
-		{
-			// 3. もし移動先が「壁（1）」だったら、移動せずにその場で向きだけ変える
+
+			// 壁（1）だったら、移動せずにその場で向きだけ変える
 			if (mapValue == 1)
 			{
 				switch (dir_)
@@ -104,12 +97,90 @@ void Enemy::Update()
 				default: break;
 				}
 			}
-			// 4. 壁じゃない（床）なら移動する
 			else
 			{
 				pos_ = newPos;
 			}
+			break;
+			
+		case Chase:
+			// プレイヤーが離れたら（7マス以上とかにすると自然だよ）見失って探す（Search）へ
+			if (totalDist > 7 * ENEMY_DRAW_SIZE)
+			{
+				state_ = Search;
+				break;
+			}
+			// もし攻撃が届く距離（例: 1マス以内）なら攻撃（Attack）へ
+			else if (totalDist <= ENEMY_DRAW_SIZE)
+			{
+				state_ = Attack;
+				break;
+			}
+
+			// 追跡移動の処理
+			pos_ = newPos;
+			if (distX > distY)
+			{
+				dir_ = (playerPos.x > pos_.x) ? RIGHT : LEFT;
+			}
+			else
+			{
+				dir_ = (playerPos.y > pos_.y) ? DOWN : UP;
+			}
+			break;
+		case Attack:
+			if (totalDist > ENEMY_DRAW_SIZE)
+			{
+				state_ = Chase;
+			}
+			break;
+		case Search:
+			// その場でキョロキョロ探す処理などをここに書くよ
+			// 今は暫定で、プレイヤーを見つけたらChaseに戻り、見つからなければPatrolに戻るようにしておくね
+			if (totalDist < 5 * ENEMY_DRAW_SIZE)
+			{
+				state_ = Chase;
+			}
+			else
+			{
+				state_ = Patrol; // 見つからなければ通常の巡回に戻る
+			}
+			break;
 		}
+		//if (distX + distY < 5 * ENEMY_DRAW_SIZE)
+		//{
+		//	pos_ = newPos;
+		//	if (distX > distY)
+		//	{
+		//		// X方向の差の方が大きいから、左右のどちらかに向きを変える
+		//		dir_ = (playerPos.x > pos_.x) ? RIGHT : LEFT;
+		//	}
+		//	else
+		//	{
+		//		// Y方向の差の方が大きいから、上下のどちらかに向きを変える
+		//		dir_ = (playerPos.y > pos_.y) ? DOWN : UP;
+		//	}
+		//}
+		//else
+		//{
+		//	// 3. もし移動先が「壁（1）」だったら、移動せずにその場で向きだけ変える
+		//	if (mapValue == 1)
+		//	{
+		//		switch (dir_)
+		//		{
+		//		case UP:    dir_ = RIGHT; break;
+		//		case RIGHT: dir_ = DOWN;  break;
+		//		case DOWN:  dir_ = LEFT;  break;
+		//		case LEFT:  dir_ = UP;    break;
+		//		default: break;
+		//		}
+		//	}
+		//	// 4. 壁じゃない（床）なら移動する
+		//	else
+		//	{
+		//		pos_ = newPos;
+		//	}
+		//}
 
 		prog_timer = 0.5f + prog_timer;
 	}

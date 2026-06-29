@@ -14,5 +14,7 @@ public:
 	~Enemy();
 	void Update() override;
 	void Draw() override;
+private:
+	int state_;
 };
 
