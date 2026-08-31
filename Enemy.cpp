@@ -21,8 +21,7 @@ enum State {
 };
 
 Enemy::Enemy()
-	: GameObject()
-	, state_(Patrol)
+	: GameObject(),state_(Patrol)
 {
 	hImage_ = LoadGraph("Assets/panda_R.png");
 	pos_ = ENEMY_START_POS; //32はブロックの位置pos_
@@ -182,7 +181,15 @@ void Enemy::Update()
 		//	}
 		//}
 
-		prog_timer = 0.5f + prog_timer;
+		//移動速度の変更
+		float moveInterval = 0.5f; // 通常時の移動間隔（秒）
+
+		//追跡状態の時は移動速度を速くする
+		if (state_ == Chase)
+		{
+			moveInterval = 0.25f; // 追跡時は2倍のスピード（0.25秒間隔）
+		}
+		prog_timer = moveInterval + prog_timer;
 	}
 }
 
