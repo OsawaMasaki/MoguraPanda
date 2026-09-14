@@ -6,9 +6,9 @@
 class Enemy :
     public GameObject
 {
-	int hImage_;//‰æ‘œID
-	Point pos_;//ˆÊ’u
-	DIR dir_;//ˆÚ“®•ûŒü
+	int hImage_; //‰æ‘œID
+	Point pos_;  //ˆÊ’u
+	DIR dir_;    //ˆÚ“®•ûŒü
 public:
 	Enemy();
 	~Enemy();

@@ -5,10 +5,10 @@
 
 namespace
 {
-	const int ENEMY_SIZE = 48; //敵のサイズ 32*32
+	const int ENEMY_SIZE = 48;          //敵のサイズ 32*32
 	const Point ENEMY_START_POS = { 20 * ENEMY_SIZE, 10 * ENEMY_SIZE }; //敵の初期位置
 	const DIR INIT_ENEMY_DIR = { RIGHT };
-	const int ENEMY_DRAW_SIZE = 32; //敵の描画サイズ
+	const int ENEMY_DRAW_SIZE = 32;     //敵の描画サイズ
 	const int animFrame[4]{ 0, 1, 2, 1 };
 	const float ANIM_INTERVAL = 0.2f;
 }
@@ -54,7 +54,7 @@ void Enemy::Update()
 
 	if (prog_timer < 0.0f)
 	{
-		// 1. まず、現在の位置から「一歩進んだ仮の座標」を計算する
+		// 現在の位置から「一歩進んだ仮の座標」を計算する
 		Point newPos = pos_;
 		switch (dir_)
 		{
@@ -65,14 +65,14 @@ void Enemy::Update()
 		default: break;
 		}
 
-		// 2.　一歩進めた「newPos」の場所が壁かどうかをここで調べる
+		// 一歩進めた「newPos」の場所が壁かどうかをここで調べる
 		int mapValue = FindGameObject<Stage>()->GetMap(newPos.x / CHA_SIZE, newPos.y / CHA_SIZE);
 
 		float distX = abs(playerPos.x - pos_.x);
 		float distY = abs(playerPos.y - pos_.y);
 		float totalDist = distX + distY;
 	 
-		//ここからプレイヤーが近くにいるかの処理
+		//----------------ここからプレイヤーが近くにいるかの処理--------------------
 		//範囲内に入ったら追いかけるように
 		switch (state_)
 		{
@@ -84,7 +84,7 @@ void Enemy::Update()
 				break;
 			}
 
-			// 壁（1）だったら、移動せずにその場で向きだけ変える
+			// 壁だったら移動せずにその場で向きだけ変える
 			if (mapValue == 1)
 			{
 				switch (dir_)
@@ -109,7 +109,7 @@ void Enemy::Update()
 				state_ = Search;
 				break;
 			}
-			// もし攻撃が届く距離（例: 1マス以内）なら攻撃（Attack）へ
+			// もし攻撃が届く距離なら攻撃（Attack）へ
 			else if (totalDist <= ENEMY_DRAW_SIZE)
 			{
 				state_ = Attack;
@@ -134,8 +134,7 @@ void Enemy::Update()
 			}
 			break;
 		case Search:
-			// その場でキョロキョロ探す処理などをここに書くよ
-			// 今は暫定で、プレイヤーを見つけたらChaseに戻り、見つからなければPatrolに戻るようにしておくね
+			// 今は暫定で、プレイヤーを見つけたらChaseに戻り、見つからなければPatrolに戻るように
 			if (totalDist < 5 * ENEMY_DRAW_SIZE)
 			{
 				state_ = Chase;
@@ -206,10 +205,7 @@ void Enemy::Draw()
 		{  nowFrame * ENEMY_SIZE, 2 * ENEMY_SIZE, ENEMY_SIZE, ENEMY_SIZE}
 	};
 
-	// ==========================================================
-	// 【追加】敵の正面1マスにデバッグ用の箱を描画する
-	// ==========================================================
-	// 1. まず、今の位置から「正面一歩先」の座標を計算する
+	//今の位置から「正面一歩先」の座標を計算する
 	Point frontBoxPos = pos_; // 敵の今の位置をベースにする
 	switch (dir_)
 	{
@@ -227,8 +223,7 @@ void Enemy::Draw()
 		break;
 	}
 
-	// 2. 計算した座標（frontBoxPos）に、デバッグ用の箱を描画する
-	//    敵本体の黄色（255, 255, 0）と違う色にすると分かりやすいよ（例：水色）
+	//計算した座標（frontBoxPos）に、デバッグ用の箱を描画する
 	for (int y = 0; y < 3;y++)
 	{
 		for (int x = 0; x < 3;x++)
@@ -239,7 +234,7 @@ void Enemy::Draw()
 				GetColor(0, 200, 200), FALSE); // 水色の箱を5*5で描画
 		}
 	}
-	// ==========================================================
+	//-----------------------------------------------
 
 
 	DrawBox(pos_.x, pos_.y, pos_.x + ENEMY_DRAW_SIZE, pos_.y + ENEMY_DRAW_SIZE,
@@ -251,7 +246,4 @@ void Enemy::Draw()
 		animTimer = ANIM_INTERVAL + animTimer;
 	}
 	animTimer = animTimer - Time::DeltaTime();
-
-
-
 }

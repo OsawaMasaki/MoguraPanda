@@ -22,8 +22,8 @@ void Input::KeyStateUpdate()
 		if (keyBuff[i] && keyBuffOld[i]) Key_Keep[i]++;
 		int key_xor = keyBuff[i] ^ keyBuffOld[i];	//前フレームと現フレームのxor
 		if (key_xor) Key_Keep[i] = 0;
-		key_down[i] = key_xor & keyBuff[i];		//押された瞬間 = (現フレームとkey_xorのAND) 
-		key_up[i] = key_xor & keyBuffOld[i];	//離された瞬間 = (前フレームとkey_xorのAND) 
+		key_down[i] = key_xor & keyBuff[i];		    //押された瞬間 = (現フレームとkey_xorのAND) 
+		key_up[i] = key_xor & keyBuffOld[i];	    //離された瞬間 = (前フレームとkey_xorのAND) 
 	}
 }
 
